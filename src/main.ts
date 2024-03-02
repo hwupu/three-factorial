@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import gsap from "gsap";
+import { fromEvent, throttle, interval } from "rxjs";
+import "./index.css";
 
 // Canvas
 const canvas = document.querySelector("canvas.webgl")! as HTMLElement;
@@ -49,8 +51,8 @@ scene.add(axesHelper);
  * Sizes
  */
 const sizes = {
-  width: 700,
-  height: 600,
+  width: window.innerWidth,
+  height: window.innerHeight,
 };
 
 /**
@@ -74,10 +76,33 @@ const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
 });
 renderer.setSize(sizes.width, sizes.height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 const clock = new THREE.Clock();
 
 gsap.to(cube2.position, { z: -2, duration: 1, delay: 1 });
+
+/**
+ * Resize
+ */
+const resizeEvent = fromEvent(window, "resize");
+const throttledResize = resizeEvent.pipe(throttle(() => interval(50)));
+throttledResize.subscribe(() => {
+  sizes.width = window.innerWidth;
+  sizes.height = window.innerHeight;
+  camera.aspect = sizes.width / sizes.height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(sizes.width, sizes.height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
+
+window.addEventListener("dblclick", () => {
+  if (!document.fullscreenElement) {
+    canvas.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+});
 
 /**
  * Animations
