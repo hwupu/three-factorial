@@ -1,8 +1,9 @@
 import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import gsap from "gsap";
 
 // Canvas
-const canvas = document.querySelector("canvas.webgl")!;
+const canvas = document.querySelector("canvas.webgl")! as HTMLElement;
 
 // Scene
 const scene = new THREE.Scene();
@@ -48,7 +49,7 @@ scene.add(axesHelper);
  * Sizes
  */
 const sizes = {
-  width: 800,
+  width: 700,
   height: 600,
 };
 
@@ -56,9 +57,15 @@ const sizes = {
  * Camera
  */
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height);
-camera.position.set(3, 1, 3);
-camera.lookAt(new THREE.Vector3(0, 0, 0));
+camera.position.set(2, 2, 5);
+camera.lookAt(new THREE.Vector3());
 scene.add(camera);
+
+/**
+ * Controls
+ */
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
 
 /**
  * Renderer
@@ -86,6 +93,9 @@ const tick = () => {
   cube1.position.y = Math.sin(elapsedTime);
   mesh.position.x = Math.sin(elapsedTime);
   mesh.position.z = Math.cos(elapsedTime);
+
+  controls.update();
+
   renderer.render(scene, camera);
   requestAnimationFrame(tick);
 };
