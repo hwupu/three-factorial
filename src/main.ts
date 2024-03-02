@@ -5,6 +5,44 @@ import GUI from "lil-gui";
 import { fromEvent, throttle, interval } from "rxjs";
 import "./index.css";
 
+/**
+ * Texture
+ */
+const loadingManager = new THREE.LoadingManager();
+loadingManager.onStart = () => {
+  console.log("start loading");
+};
+loadingManager.onLoad = () => {
+  console.log("completed");
+};
+const textureLoader = new THREE.TextureLoader(loadingManager);
+const mineAlbedo = textureLoader.load("/textures/minecraft.png");
+const doorAlbedo = textureLoader.load("/textures/door/color.jpg");
+const doorAlpha = textureLoader.load("/textures/door/alpha.jpg");
+const doorNormal = textureLoader.load("/textures/door/normal.jpg");
+const doorHeight = textureLoader.load("/textures/door/height.jpg");
+const doorAO = textureLoader.load("/textures/door/ambientOcclusion.jpg");
+const doorMetal = textureLoader.load("/textures/door/metalness.jpg");
+const doorRough = textureLoader.load("/textures/door/roughness.jpg");
+
+doorAlbedo.colorSpace = THREE.SRGBColorSpace;
+/*
+  doorAlbedo.repeat.x = 2;
+  doorAlbedo.repeat.y = 2;
+  doorAlbedo.wrapS = THREE.MirroredRepeatWrapping;
+  doorAlbedo.wrapT = THREE.MirroredRepeatWrapping;
+  doorAlbedo.offset.x = 0.5;
+  doorAlbedo.offset.y = 0.5;
+  doorAlbedo.center.x = 0.5;
+  doorAlbedo.center.y = 0.5;
+  doorAlbedo.rotation = Math.PI * 0.25;
+*/
+
+// If use NearestFilter, then mipmaps has no use.
+mineAlbedo.generateMipmaps = false;
+mineAlbedo.minFilter = THREE.NearestFilter;
+mineAlbedo.magFilter = THREE.NearestFilter;
+
 const debugObject: {
   color: string;
   subdivision: number;
@@ -60,14 +98,14 @@ group.add(cube2);
 
 const cube3 = new THREE.Mesh(
   new THREE.BoxGeometry(1, 1, 1),
-  new THREE.MeshBasicMaterial({ color: 0x0000ff }),
+  new THREE.MeshBasicMaterial({ map: mineAlbedo }),
 );
 cube3.position.set(2, 0, 0);
 group.add(cube3);
 
 const mesh = new THREE.Mesh(
   new THREE.BoxGeometry(1, 1, 1),
-  new THREE.MeshBasicMaterial({ color: 0x555500 }),
+  new THREE.MeshBasicMaterial({ map: doorAlbedo }),
 );
 mesh.position.set(0, 2, 0);
 mesh.rotation.reorder("YXZ");
@@ -129,7 +167,7 @@ gui
       debugObject.subdivision,
     );
   });
-gui.hide();
+// gui.hide();
 window.addEventListener("keydown", (event) => {
   const keyboardEvent = event as KeyboardEvent;
   if (keyboardEvent.key == "h") gui.show(gui._hidden);
