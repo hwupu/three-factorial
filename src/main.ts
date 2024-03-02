@@ -1,133 +1,75 @@
+import "./index.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
-import GUI from "lil-gui";
-import "./index.css";
+import { FontLoader, TextGeometry } from "three/examples/jsm/Addons.js";
 
-const gui = new GUI();
 const scene = new THREE.Scene();
+// scene.add(new THREE.AxesHelper());
 
 const textureLoader = new THREE.TextureLoader();
-const doorAlbedo = textureLoader.load("/textures/door/color.jpg");
-const doorAlpha = textureLoader.load("/textures/door/alpha.jpg");
-const doorNormal = textureLoader.load("/textures/door/normal.jpg");
-const doorHeight = textureLoader.load("/textures/door/height.jpg");
-const doorAO = textureLoader.load("/textures/door/ambientOcclusion.jpg");
-const doorMetal = textureLoader.load("/textures/door/metalness.jpg");
-const doorRough = textureLoader.load("/textures/door/roughness.jpg");
-const matcaps = textureLoader.load("/textures/matcaps/8.png");
-const gradient = textureLoader.load("/textures/gradient/5.jpg");
-
-doorAlbedo.colorSpace = THREE.SRGBColorSpace;
+const matcaps = textureLoader.load("/textures/matcaps/4.png");
+const matcaps2 = textureLoader.load("/textures/matcaps/1.png");
 matcaps.colorSpace = THREE.SRGBColorSpace;
-gradient.colorSpace = THREE.SRGBColorSpace;
+matcaps2.colorSpace = THREE.SRGBColorSpace;
 
-// const material = new THREE.MeshBasicMaterial({ map: matcaps1 });
-// material.color = new THREE.Color("#ff0000");
+const fontLoader = new FontLoader();
+fontLoader.load("/fonts/helvetiker_regular.typeface.json", (font) => {
+  const textGeometry = new TextGeometry("Hello Three.js", {
+    font,
+    size: 0.5,
+    height: 0.2,
+    curveSegments: 5,
+    bevelEnabled: true,
+    bevelThickness: 0.03,
+    bevelSize: 0.02,
+    bevelOffset: 0,
+    bevelSegments: 4,
+  });
 
-// const material = new THREE.MeshNormalMaterial();
-// material.flatShading = true;
+  textGeometry.computeBoundingBox();
+  // textGeometry.translate(
+  //   (textGeometry.boundingBox!.max.x - 0.2) * -0.5,
+  //   (textGeometry.boundingBox!.max.y - 0.2) * -0.5,
+  //   (textGeometry.boundingBox!.max.z - 0.2) * -0.5,
+  // );
+  textGeometry.center();
 
-// const material = new THREE.MeshMatcapMaterial();
-// material.matcap = matcaps;
+  const textMaterial = new THREE.MeshMatcapMaterial();
+  textMaterial.matcap = matcaps;
+  const text = new THREE.Mesh(textGeometry, textMaterial);
+  scene.add(text);
 
-// const material = new THREE.MeshDepthMaterial();
+  const donutGeometry = new THREE.TorusGeometry(0.3, 0.2, 20, 45);
+  const donutMaterial1 = new THREE.MeshMatcapMaterial();
+  const donutMaterial2 = new THREE.MeshMatcapMaterial();
+  donutMaterial1.matcap = matcaps;
+  donutMaterial2.matcap = matcaps2;
+  for (let i of Array.from(Array(100).keys())) {
+    const donut = new THREE.Mesh(
+      donutGeometry,
+      i % 2 ? donutMaterial1 : donutMaterial2,
+    );
+    donut.position.set(
+      (Math.random() - 0.5) * 10,
+      (Math.random() - 0.5) * 10,
+      (Math.random() - 0.5) * 10,
+    );
+    donut.rotation.set(
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI * 2,
+      Math.random() * Math.PI * 2,
+    );
+    const s = 0.2 + 0.8 * Math.random();
+    donut.scale.set(s, s, s);
 
-// Must efficent material that works with lighting, but has some downside with geometry.
-// const material = new THREE.MeshLambertMaterial();
-
-// const material = new THREE.MeshPhongMaterial();
-// material.color = new THREE.Color(0xff8811);
-// material.shininess = 50;
-// material.specular = new THREE.Color(0x1188ff);
-
-// const material = new THREE.MeshToonMaterial();
-// gradient.minFilter = THREE.NearestFilter;
-// gradient.magFilter = THREE.NearestFilter;
-// gradient.generateMipmaps = false;
-// material.gradientMap = gradient;
-
-const material = new THREE.MeshPhysicalMaterial();
-// const material = new THREE.MeshStandardMaterial();
-material.metalness = 1;
-material.roughness = 1;
-// material.map = doorAlbedo;
-material.aoMap = doorAO;
-material.aoMapIntensity = 1;
-material.displacementMap = doorHeight;
-material.displacementScale = 0.1;
-material.metalnessMap = doorMetal;
-material.roughnessMap = doorRough;
-material.normalMap = doorNormal;
-material.normalScale.set(0.5, 0.5);
-material.transparent = true;
-material.alphaMap = doorAlpha;
-gui.add(material, "metalness").min(0).max(1).step(0.1);
-gui.add(material, "roughness").min(0).max(1).step(0.1);
-gui.add(material, "aoMapIntensity").min(0).max(1).step(0.1);
-gui.add(material, "displacementScale").min(0).max(1).step(0.1);
-
-// Clearcoart (For PhysicMaterial)
-material.clearcoat = 1;
-material.clearcoatRoughness = 0;
-gui.add(material, "clearcoat").min(0).max(1).step(0.1);
-gui.add(material, "clearcoatRoughness").min(0).max(1).step(0.1);
-
-// Sheen (For PhysicMaterial)
-material.sheen = 1;
-material.sheenRoughness = 0.25;
-material.sheenColor.set(1, 1, 1);
-gui.add(material, "sheen").min(0).max(1).step(0.1);
-gui.add(material, "sheenRoughness").min(0).max(1).step(0.1);
-gui.addColor(material, "sheenColor");
-
-material.iridescence = 1;
-material.iridescenceIOR = 1;
-material.iridescenceThicknessRange = [100, 800];
-gui.add(material, "iridescence").min(0).max(1).step(0.1);
-gui.add(material, "iridescenceIOR").min(0).max(2.333).step(0.1);
-gui.add(material.iridescenceThicknessRange, "0").min(0).max(1000).step(1);
-gui.add(material.iridescenceThicknessRange, "1").min(0).max(1000).step(1);
-
-// ior: index of refraction
-// Diamond: ior = 2.417
-// Water: ior = 1.333
-// Air: ior = 1.000293
-material.transmission = 1;
-material.ior = 1.5;
-material.thickness = 0.5;
-gui.add(material, "transmission").min(0).max(1).step(0.1);
-gui.add(material, "ior").min(0).max(10).step(0.1);
-gui.add(material, "thickness").min(0).max(1).step(0.1);
-
-// This is computation **relatively** heavy.
-// material.side = THREE.DoubleSide;
-
-const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.5, 64, 64), material);
-const plane = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 64, 64), material);
-const torus = new THREE.Mesh(
-  new THREE.TorusGeometry(0.3, 0.2, 64, 64),
-  material,
-);
-
-sphere.position.x = -2;
-torus.position.x = 2;
-scene.add(sphere, plane, torus);
-
-// const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-// const pointLight = new THREE.PointLight(0xffffff, 30);
-// pointLight.position.set(2, 3, 4);
-// scene.add(ambientLight, pointLight);
-
-const rgbeLoader = new RGBELoader();
-rgbeLoader.load("/textures/environmentMap/2k.hdr", (envMap) => {
-  envMap.mapping = THREE.EquirectangularReflectionMapping;
-  scene.background = envMap;
-  scene.environment = envMap;
+    // Should test for collision with text
+    // if so, eat the donut (continue)
+    scene.add(donut);
+  }
 });
 
 const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight);
-camera.position.set(3, 2, 3);
+camera.position.set(0, 0, 5);
 scene.add(camera);
 const canvas = document.querySelector("canvas.webgl") as HTMLElement;
 const controls = new OrbitControls(camera, canvas);
@@ -139,14 +81,6 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 const clock = new THREE.Clock();
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
-
-  sphere.rotation.y = 0.1 * elapsedTime;
-  plane.rotation.y = 0.1 * elapsedTime;
-  torus.rotation.y = 0.1 * elapsedTime;
-
-  sphere.rotation.x = -0.5 * elapsedTime;
-  plane.rotation.x = -0.5 * elapsedTime;
-  torus.rotation.x = -0.5 * elapsedTime;
 
   controls.update();
   renderer.render(scene, camera);
