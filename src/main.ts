@@ -1,52 +1,76 @@
 import "./index.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import GUI from "lil-gui";
 
 const scene = new THREE.Scene();
 scene.add(new THREE.AxesHelper());
 
-const textureLoader = new THREE.TextureLoader();
-const particleTexture = textureLoader.load("/textures/particles/5.png");
+const parameters = {
+  counts: 1000,
+  size: 0.02,
+  radius: 5,
+  branches: 5,
+};
 
-const particleGeometry = new THREE.BufferGeometry();
-const count = 1000;
-const positions = new Float32Array(count * 3);
-const colors = new Float32Array(count * 3);
+let geometry: THREE.BufferGeometry | null;
+let material: THREE.PointsMaterial | null;
+let points: THREE.Points | null;
 
-for (const i in Array.from(Array(count).keys())) {
-  positions[i] = (Math.random() - 0.5) * 10;
-  colors[i] = Math.random();
-}
-particleGeometry.setAttribute(
-  "position",
-  new THREE.BufferAttribute(positions, 3),
-);
-particleGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+const generateGalaxy = () => {
+  if (points != null) {
+    geometry?.dispose();
+    material?.dispose();
+    scene.remove(points!);
+  }
+  const position = new Float32Array(parameters.counts * 3);
+  for (const i in Array.from(Array(parameters.counts).keys())) {
+    const i3 = i * 3;
+    const radius = Math.random() * parameters.radius;
 
-const particleMaterial = new THREE.PointsMaterial();
-particleMaterial.size = 0.1;
-particleMaterial.sizeAttenuation = true;
-particleMaterial.transparent = true;
-particleMaterial.alphaMap = particleTexture;
+    position[i3 + 0] = radius;
+    position[i3 + 1] = (Math.random() - 0.5) * 3;
+    position[i3 + 2] = (Math.random() - 0.5) * 3;
+  }
+  geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(position, 3));
+  material = new THREE.PointsMaterial({
+    size: parameters.size,
+    sizeAttenuation: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  points = new THREE.Points(geometry, material);
+  scene.add(points);
+};
 
-// Alpha color threshold
-// particleMaterial.alphaTest = 0.1;
+generateGalaxy();
 
-// Stop testing object's depth, just draw it all.
-// particleMaterial.depthTest = false;
-
-// Stop writing to depth buffer
-// particleMaterial.depthWrite = false;
-
-// Additive color mode. (can impact performance)
-particleMaterial.blending = THREE.AdditiveBlending;
-
-// Vertex color will blend with particleMaterial.color
-// particleMaterial.color = new THREE.Color("#ffffff");
-particleMaterial.vertexColors = true;
-
-const particles = new THREE.Points(particleGeometry, particleMaterial);
-scene.add(particles);
+const gui = new GUI();
+gui
+  .add(parameters, "counts")
+  .min(100)
+  .max(10000)
+  .step(100)
+  .onFinishChange(generateGalaxy);
+gui
+  .add(parameters, "size")
+  .min(0.001)
+  .max(0.1)
+  .step(0.001)
+  .onFinishChange(generateGalaxy);
+gui
+  .add(parameters, "radius")
+  .min(1)
+  .max(10)
+  .step(1)
+  .onFinishChange(generateGalaxy);
+gui
+  .add(parameters, "branches")
+  .min(1)
+  .max(10)
+  .step(1)
+  .onFinishChange(generateGalaxy);
 
 const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight);
 camera.position.set(2, 2, 5);
@@ -59,10 +83,7 @@ const renderer = new THREE.WebGLRenderer({ canvas });
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-const clock = new THREE.Clock();
 const tick = () => {
-  const time = clock.getElapsedTime();
-
   controls.update();
   renderer.render(scene, camera);
   requestAnimationFrame(tick);
