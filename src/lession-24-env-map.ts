@@ -36,6 +36,7 @@ const updateAllMaterials = () => {
       child.material instanceof THREE.MeshStandardMaterial
     ) {
       child.material.envMapIntensity = 2;
+      // call this function in gui.onChange, if need to update
     }
   });
 };
