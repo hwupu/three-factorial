@@ -24,7 +24,7 @@ sun.castShadow = true;
 scene.add(ambient, sun);
 
 const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight);
-camera.position.set(1, 0, 2);
+camera.position.set(2, 2, 5);
 camera.lookAt(new THREE.Vector3());
 scene.add(camera);
 const canvas = document.querySelector("canvas.webgl") as HTMLElement;
