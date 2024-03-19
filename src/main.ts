@@ -1,8 +1,8 @@
 import "./index.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import vertexShader28 from "./shaders/vertex28.glsl?raw";
-import fragmentShader28 from "./shaders/fragment28.glsl?raw";
+import vertexShader from "./shaders/vertex30.glsl?raw";
+import fragmentShader from "./shaders/fragment30.glsl?raw";
 
 const scene = new THREE.Scene();
 scene.add(new THREE.AxesHelper());
@@ -10,8 +10,8 @@ scene.add(new THREE.AxesHelper());
 const plane = new THREE.Mesh(
   new THREE.PlaneGeometry(1, 1, 32, 32),
   new THREE.ShaderMaterial({
-    vertexShader: vertexShader28,
-    fragmentShader: fragmentShader28,
+    vertexShader: vertexShader,
+    fragmentShader: fragmentShader,
     side: THREE.DoubleSide,
   }),
 );
@@ -24,7 +24,7 @@ sun.castShadow = true;
 scene.add(ambient, sun);
 
 const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight);
-camera.position.set(1, 0, 2);
+camera.position.set(2, 2, 5);
 camera.lookAt(new THREE.Vector3());
 scene.add(camera);
 const canvas = document.querySelector("canvas.webgl") as HTMLElement;
