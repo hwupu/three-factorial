@@ -1,8 +1,8 @@
 import "./index.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import vertexShader from "./shaders/vertex30.glsl?raw";
-import fragmentShader from "./shaders/fragment30.glsl?raw";
+import vertexShader from "./shaders/vertex31.glsl?raw";
+import fragmentShader from "./shaders/fragment31.glsl?raw";
 
 const scene = new THREE.Scene();
 scene.add(new THREE.AxesHelper());
